@@ -97,6 +97,44 @@ function animateSkillBars() {
 }
 
 // Form submission handling
+const contactForm = document.querySelector('.contact-form');
+if (contactForm) {
+    contactForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        
+        submitBtn.textContent = 'Sending...';
+        submitBtn.disabled = true;
+
+        const formData = new FormData(this);
+        
+        try {
+            const response = await fetch(this.action || window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                showNotification('Message sent successfully! I\'ll get back to you soon.', 'success');
+                this.reset();
+            } else {
+                const errorData = await response.json();
+                showNotification(errorData.message || 'Failed to send message. Please try again.', 'error');
+            }
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            showNotification('Network error or server unreachable. Please try again.', 'error');
+        } finally {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+}
 
 // Notification system
 function showNotification(message, type = 'info') {
